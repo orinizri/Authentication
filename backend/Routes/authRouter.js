@@ -1,21 +1,15 @@
 import express from "express";
-import { getAllUsers, getUserById, validateUserPassword, createNewUser } from "../controllers/index.js";
-import User from "../models/user.js";
+import { userProfile, getAllUsers, getUserById, validateUserPassword, createNewUser, userLogin } from "../controllers/index.js";
+import authentication from "./middleware/authentication.js";
+
 
 const authRouter = express.Router()
 
 authRouter.post('/users', createNewUser)
-authRouter.post('/users/login', async (req,res) => {
-    try {
-    const { email, password } = req.body;
-    const user = await User.findByCredentials(email, password);
-    res.send(user)
-    } catch (e) {
-        res.status(400).send({ error : e.message })
-    }
-})
+authRouter.get('/users/login', userLogin)
 
 authRouter.get('/users', getAllUsers)
+authRouter.get('/users/me', authentication, userProfile)
 authRouter.get('/users/:id', getUserById)
 authRouter.get('/validate/:id/:password', validateUserPassword)
 

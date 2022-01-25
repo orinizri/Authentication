@@ -1,10 +1,22 @@
 import User from "../models/user.js";
 import { getUsers, validatePasswordCongruency } from '../services/index.js'
 
+const userProfile = async (req, res) => {
+    res.send(req.user);
+};
+const userLogin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findByCredentials(email, password); // User is the model
+        const token = await user.generateAuthToken() // user is instance if User
+        res.send({ user, token })
+    } catch (e) {
+        res.send({ error: e.message })
+    }
+}
 
 const getAllUsers = async (req, res) => {
     const allUsers = await getUsers(true);
-    console.log(allUsers);
     res.send(allUsers);
 }
 const getUserById = async (req, res) => {
@@ -20,17 +32,13 @@ const validateUserPassword = async (req, res) => {
 }
 const createNewUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
-        const newUser = new User({
-            name,
-            email,
-            password
-        });
-        await newUser.save();
-        res.send("User created");
+        const user = new User(req.body);
+        await user.save()
+        const token = await user.generateAuthToken() // user is instance of User
+        res.send({ user, token });
     } catch (e) {
-        res.status(400).send({ error: e.message });
+        res.send(e);
     }
 }
 
-export { getAllUsers, getUserById, validateUserPassword, createNewUser };
+export { getAllUsers, getUserById, validateUserPassword, createNewUser, userLogin, userProfile };
