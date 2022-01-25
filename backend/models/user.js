@@ -1,17 +1,32 @@
 import mongoose from "mongoose";
 import bcrypjs from 'bcryptjs';
+import { validatePasswordCongruency } from "../services/index.js";
 
 const UserSchema = new mongoose.Schema({
     name : {
         type : String,
     },
     email: {
-        type : String
+        type : String,
+        unique : true
     },
     password : {
         type : String
     }
 });
+
+UserSchema.statics.findByCredentials = async (email, password) => {
+    const user = await User.findOne({ email:email });
+    if (!user) {
+        throw new Error('Unable to login1');
+    }
+    const isMatch = await validatePasswordCongruency(password, user.password)
+    if (!isMatch) {
+        throw new Error('Unable to login2');
+    }
+    return user;
+}
+
 
 UserSchema.pre('save', async function (next) {
     const user = this;
