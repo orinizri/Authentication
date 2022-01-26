@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import bcrypjs from 'bcryptjs';
 import jwt from 'jsonwebtoken'
 import { validatePasswordCongruency } from "../services/index.js";
-
+import Card from '../models/card.js'
 const UserSchema = new mongoose.Schema({
     name : {
         type : String,
@@ -21,6 +21,23 @@ const UserSchema = new mongoose.Schema({
         } 
     }]
 });
+
+UserSchema.virtual('cards', { //virtual entities relationship
+    ref: 'Card',
+    localField : '_id', // where the local data is stored
+    foreignField : 'owner' // name of field on the other model
+})
+
+UserSchema.methods.toJSON = function () {
+    const user = this;
+    const userObject = user.toObject();
+
+    delete userObject.password;
+    delete userObject.tokens;
+
+    return userObject;
+}
+
 
 UserSchema.methods.generateAuthToken = async function () { // .methods. available on instances
     const user = this;
@@ -43,7 +60,7 @@ UserSchema.statics.findByCredentials = async (email, password) => { // .statics.
     return user;
 }
 
-
+// Hash plain text password before saving
 UserSchema.pre('save', async function (next) { // doing something before event (saving user)
     const user = this;
     if (user.isModified('password')) {
@@ -51,6 +68,17 @@ UserSchema.pre('save', async function (next) { // doing something before event (
     }
     next(); // call next when done (since it async function that's how it'll know)
 })
+
+
+// Delete user tasjs when user is removed
+UserSchema.pre('remove', async function (next) {
+    const user = this;
+    await Card.deleteMany({ owner : user._id })
+
+    next()
+})
+
+
 
 
 const User = mongoose.model('User', UserSchema);

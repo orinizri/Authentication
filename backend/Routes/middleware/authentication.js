@@ -12,7 +12,8 @@ const authentication = async (req,res,next) => {
         if (!user) {
             throw new Error('not authorized')
         }
-        req.user = user
+        req.token = token;
+        req.user = user;
         next()
     } catch (e) {
         res.send({nooo: e.message})

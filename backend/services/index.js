@@ -12,4 +12,6 @@ const getUsers = async (all=false, id=undefined) => {
 const validatePasswordCongruency = async (userSaysPasswordIs, encryptedPassword) => {
     return await bcryptjs.compare(userSaysPasswordIs, encryptedPassword) // true or false
 }
+
+
 export { getUsers, validatePasswordCongruency }; 

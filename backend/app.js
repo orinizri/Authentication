@@ -1,9 +1,10 @@
 import dotenv from "dotenv"
-import express, { Router } from "express";
+import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import { MONGOOSE_URI, CorsConfig } from "./config.js";
-import  authRouter  from "./Routes/authRouter.js";
+import authRouter  from "./Routes/user.js";
+import {cardRouter} from './Routes/card.js'
 dotenv.config()
 const app = express();
 
@@ -17,12 +18,12 @@ app.use(cors(CorsConfig));
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/',authRouter);
+app.use('/',cardRouter);
 
 const port = process.env.PORT || 8080
 app.listen(port, () => {
     console.log(`Server is running on ${port}`)
 })
-
 
 // import bcryptjs from 'bcryptjs';
 // const bycriptjsHash = async () => {
